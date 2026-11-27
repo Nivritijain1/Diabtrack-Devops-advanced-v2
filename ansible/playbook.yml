@@ -1,0 +1,30 @@
+
+---
+- name: Backup DiabTrack models
+  hosts: localhost
+  become: yes
+  gather_facts: no
+
+  tasks:
+
+    - name: Create backup folder
+      file:
+        path: /var/backups/diabtrack
+        state: directory
+
+    - name: Backup model and scaler
+      copy:
+        src: "{{ item }}"
+        dest: "/var/backups/diabtrack/{{ item | basename }}"
+        remote_src: no
+      loop:
+        - ../app/diabetes_model.pkl
+        - ../app/diabetes_scaler.pkl
+
+    - name: Schedule daily backup
+      cron:
+        name: DiabTrack backup
+        minute: "0"
+        hour: "2"
+        job: "cp /home/nivriti_jain2/DiabTrack-DevOps/app/diabetes_model.pkl /var/backups/diabtrack/ && cp /home/nivriti_jain2/DiabTrack-DevOps/app/diabetes_scaler.pkl /var/backups/diabtrack/"
+
